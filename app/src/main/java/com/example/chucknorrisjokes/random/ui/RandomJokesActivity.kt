@@ -1,14 +1,12 @@
 package com.example.chucknorrisjokes.random.ui
 
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
-import android.view.View
 import androidx.activity.viewModels
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.DividerItemDecoration
 import androidx.recyclerview.widget.RecyclerView
-import com.example.chucknorrisjokes.R
 import com.example.chucknorrisjokes.databinding.ActivityRandomJokesBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.collect
@@ -23,14 +21,29 @@ class RandomJokesActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityRandomJokesBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
-        binding.recycler.addItemDecoration(DividerItemDecoration(this, RecyclerView.VERTICAL))
+        setContentView(binding.root)
+
+        setupRecycler()
 
         lifecycleScope.launchWhenResumed {
             viewModel.state.collect {
                 renderState(it)
             }
+        }
+    }
+
+    private fun setupRecycler() {
+        with(binding.recycler) {
+            val adapter = RandomJokesAdapter()
+            adapter.registerAdapterDataObserver(JokeDataObserver(this))
+            this.adapter = adapter
+            addItemDecoration(
+                DividerItemDecoration(
+                    this@RandomJokesActivity,
+                    RecyclerView.VERTICAL
+                )
+            )
+            addOnScrollListener(AllItemsShowScrollListener { viewModel.loadMore() })
         }
     }
 
@@ -41,7 +54,7 @@ class RandomJokesActivity : AppCompatActivity() {
             loading.isVisible = state is ViewState.Loading
 
             if (state is ViewState.Success) {
-                recycler.adapter = RandomJokesAdapter(state.jokes)
+                (recycler.adapter as RandomJokesAdapter).updateJokes(state)
             }
         }
     }

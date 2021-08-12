@@ -1,34 +1,82 @@
 package com.example.chucknorrisjokes.random.ui
 
+import android.annotation.SuppressLint
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.example.chucknorrisjokes.R
 import com.example.chucknorrisjokes.databinding.JokeBinding
+import com.example.chucknorrisjokes.databinding.LoadingBinding
 import com.example.chucknorrisjokes.random.domain.model.Joke
 
-class RandomJokesAdapter(
-    private val jokes: List<Joke>
-) : RecyclerView.Adapter<RandomJokesAdapter.ViewHolder>() {
+class RandomJokesAdapter : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        val binding = JokeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
-        return ViewHolder(binding)
+    private var state = ViewState.Success(emptyList())
+
+    override fun getItemViewType(position: Int): Int {
+        return if (position == state.jokes.size) {
+            LOADING_VIEW_TYPE
+        } else {
+            JOKE_VIEW_TYPE
+        }
     }
 
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        val joke = jokes[position]
-        holder.bind(joke)
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
+        return when (viewType) {
+            LOADING_VIEW_TYPE -> {
+                val binding =
+                    LoadingBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                LoadingViewHolder(binding)
+            }
+            else -> {
+                val binding =
+                    JokeBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+                JokeViewHolder(binding)
+            }
+        }
     }
 
-    override fun getItemId(position: Int) = jokes[position].id
+    override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+        val viewType = getItemViewType(position)
+        if (viewType == JOKE_VIEW_TYPE) {
+            val joke = state.jokes[position]
+            (holder as JokeViewHolder).bind(position, joke)
+        }
+    }
 
-    override fun getItemCount() = jokes.size
+    override fun getItemCount(): Int {
+        val numJokes = state.jokes.size
+        val numExtraViewsForLoading = if (state.loadingMore) {
+            1
+        } else {
+            0
+        }
+        return numJokes + numExtraViewsForLoading
+    }
 
-    class ViewHolder(private val binding: JokeBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(joke: Joke) {
+    @SuppressLint("NotifyDataSetChanged")
+    fun updateJokes(newState: ViewState.Success) {
+        state = newState
+        notifyDataSetChanged()
+    }
+
+    class LoadingViewHolder(binding: LoadingBinding) : RecyclerView.ViewHolder(binding.root)
+
+    class JokeViewHolder(private val binding: JokeBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(position: Int, joke: Joke) {
             with(binding) {
+                jokeNumberTextView.text = getJokeNumberString(position)
                 jokeTextView.text = joke.joke
             }
         }
+
+        private fun getJokeNumberString(position: Int) =
+            binding.root.context.getString(R.string.joke_number, position + 1)
+    }
+
+    companion object {
+        const val JOKE_VIEW_TYPE = 0
+        const val LOADING_VIEW_TYPE = 1
     }
 }
