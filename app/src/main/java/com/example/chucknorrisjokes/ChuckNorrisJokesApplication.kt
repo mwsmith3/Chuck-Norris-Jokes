@@ -1,6 +1,7 @@
 package com.example.chucknorrisjokes
 
 import android.app.Application
+import dagger.hilt.android.HiltAndroidApp
 
-class ChuckNorrisJokesApplication : Application() {
-}
+@HiltAndroidApp
+class ChuckNorrisJokesApplication : Application()

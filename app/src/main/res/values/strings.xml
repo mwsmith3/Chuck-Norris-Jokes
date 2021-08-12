@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">Jokes</string>
+    <string name="app_name">Chuck Norris Jokes</string>
+    <string name="error">Sorry we are unable to load the Chuck Norris Jokes at this time.</string>
 </resources>
