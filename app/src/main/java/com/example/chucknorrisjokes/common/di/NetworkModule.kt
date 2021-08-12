@@ -1,4 +1,4 @@
-package com.example.chucknorrisjokes.di
+package com.example.chucknorrisjokes.common.di
 
 import com.google.gson.Gson
 import com.google.gson.GsonBuilder
