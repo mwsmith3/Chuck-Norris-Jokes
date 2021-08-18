@@ -33,7 +33,7 @@ class RandomJokesRepositoryTest {
             val numberOfJokes = 4
             coEvery { networkDataSource.getJokes(numberOfJokes) } returns JOKES
 
-            val repository = RandomJokesRepository(networkDataSource)
+            val repository = RandomJokesRepositoryImpl(networkDataSource)
 
             val actual = repository.getJokes(numberOfJokes)
             coVerify { networkDataSource.getJokes(numberOfJokes) }
